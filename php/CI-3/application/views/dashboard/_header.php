@@ -142,7 +142,7 @@ function build_query_strings() {
 	var vars = query.split('&');
 	for (var i = 0; i < vars.length; i++) {
 		var pair = vars[i].split('=');
-		window.query_strings[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+		window.query_strings[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1].replace(/\+/g, '%20'));
 	}
 }
 function getQueryDate(d) {
@@ -432,6 +432,19 @@ function calc_project_data_adsense(target, label){
 	}
 }
 function parse_analytis_data(ret_data, date_range_style, date_flag) {
+				var label_split_delimiter = ',';
+				var label_begin_skip_count = 0;
+				var label_end_skip_count = 0;
+
+				if (window.parts_handler && window.query_strings && window.query_strings['project'] && window.parts_handler[window.query_strings['project']] && window.parts_handler[window.query_strings['project']]['analytics']) {
+					if (window.parts_handler[window.query_strings['project']]['analytics']['parts_separator'])
+						label_split_delimiter = window.parts_handler[window.query_strings['project']]['analytics']['parts_separator'];
+					if (window.parts_handler[window.query_strings['project']]['analytics']['parts_begin_skip_count'])
+						label_begin_skip_count = window.parts_handler[window.query_strings['project']]['analytics']['parts_begin_skip_count'];
+					if (window.parts_handler[window.query_strings['project']]['analytics']['parts_end_skip_count'])
+						label_end_skip_count = window.parts_handler[window.query_strings['project']]['analytics']['parts_end_skip_count'];
+					//console.log('window.parts_handler setup @ parse_analytis_data');
+				}
 				var field_lookup = {};
 				for( var i=0, cnt = ret_data['fields'].length ; i<cnt ; ++i)
 					field_lookup[ret_data['fields'][i]] = i;
@@ -442,7 +455,13 @@ function parse_analytis_data(ret_data, date_range_style, date_flag) {
 					date_info = date_range_style + '_' + date_flag;
 //console.log(date_info);
 					var group = ret_data['data'][i][ field_lookup['ga:eventAction'] ];
-					var labels = ret_data['data'][i][ field_lookup['ga:eventLabel'] ].split(',');
+					var labels = ret_data['data'][i][ field_lookup['ga:eventLabel'] ].split(label_split_delimiter);
+					for (var j=0 ; j<label_begin_skip_count ; j++)
+						labels.unsift();
+					for (var j=0 ; j<label_end_skip_count ; j++)
+						labels.pop();
+console.log('group:',group,'labels:',labels);
+
 					var value_new_user = parseInt(ret_data['data'][i][ field_lookup['ga:newUsers'] ]);
 					var value_user = parseInt(ret_data['data'][i][ field_lookup['ga:users'] ]);
 					var value_data = {
