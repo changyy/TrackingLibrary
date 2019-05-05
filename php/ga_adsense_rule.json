@@ -1,0 +1,70 @@
+{
+	"dashboard": [
+		{
+			"id": "GA only",
+			"project": {
+				"google_api_project": "YOUR-GOOGLE-PROJECT-OAUTH-USAGE.apps.googleusercontent.com",
+				"analytics": {
+					"ga_profile_id": "ga:your_ga_project_view_id",
+					"scope": [
+						"https://www.googleapis.com/auth/analytics.readonly"
+					]
+				},
+				"adsense": {
+					"scope": [
+						"https://www.googleapis.com/auth/adsense.readonly"
+					]
+				}
+			},
+			"rule": {
+				"analytics": {
+					"prefix": "#",
+					"parts_separator": ","
+				},
+				"adsense": {
+					"prefix": "[#]",
+					"parts_separator": ","
+				}
+			}
+		},
+
+		{
+			"id": "Analytics x Adsense",
+			"project": {
+				"google_api_project": "YOUR-GOOGLE-PROJECT-OAUTH-USAGE.apps.googleusercontent.com",
+				"analytics": {
+					"ga_profile_id": ["ga:your_ga_project_view_id", "ga:your_ga_project_view_id"],
+					"scope": [
+						"https://www.googleapis.com/auth/analytics.readonly"
+					]
+				},
+				"adsense": {
+					"scope": [
+						"https://www.googleapis.com/auth/adsense.readonly"
+					]
+				}
+			},
+			"rule": {
+				"analytics": {
+					"filter": {
+						"ga:eventCategory": "pageview"
+					},
+					"parts_group": "action",
+					"parts_subgroup": "label",
+					"parts_separator": ","
+				},
+				"adsense": {
+					"filter": {
+						"AD_UNIT_NAME": "[#]"
+					},
+					"parts_flag": {
+						"new_user": "NU",
+						"old_user": "OU"
+					},
+					"parts_separator": ","
+				}
+			}
+		},
+		{}
+	]
+}

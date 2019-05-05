@@ -1,0 +1,8 @@
+vendor
+.DS_Store
+*.swp
+*.swo
+php/3.1.10.zip
+php/CodeIgniter-3.1.10
+php/dev.json
+php/web/
