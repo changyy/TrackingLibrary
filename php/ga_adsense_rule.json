@@ -65,6 +65,48 @@
 				}
 			}
 		},
+		{
+			"id": "More GA Adsense Rules",
+			"project": {
+				"google_api_project": "YOUR-GOOGLE-PROJECT-OAUTH-USAGE.apps.googleusercontent.com",
+				"analytics": {
+					"ga_profile_id": "ga:your_ga_project_view_id", 
+					"scope": [
+						"https://www.googleapis.com/auth/analytics.readonly"
+					]
+				},
+				"adsense": {
+					"scope": [
+						"https://www.googleapis.com/auth/adsense.readonly"
+					]
+				}
+			},
+			"rule": {
+				"analytics": {
+					"filter": [
+						"ga:eventCategory==A",
+						"ga:eventCategory==B"
+					],
+					"parts_group": "action",
+					"parts_subgroup": "label",
+					"parts_separator": ",",
+					"parts_rebuild_function": ""
+				},
+				"adsense": {
+					"filter": {
+						"AD_UNIT_NAME": "[#]"
+					},
+					"parts_flag": {
+						"new_user": ",NewUser",
+						"old_user": ",OldUser"
+					},
+					"parts_separator": ",",
+					"parts_begin_skip_count": 1,
+					"parts_end_skip_count": 1,
+					"parts_rebuild_function": ""
+				}
+			}
+		},
 		{}
 	]
 }

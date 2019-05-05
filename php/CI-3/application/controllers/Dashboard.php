@@ -162,8 +162,12 @@ class Dashboard extends CI_Controller {
 		) {
 			if (is_array($this->ga_adsense_rule[$project_id]['analytics']['filter'])) {
 				foreach($this->ga_adsense_rule[$project_id]['analytics']['filter'] as $key => $value) {
-					if (!empty($value) && !empty($key)) {
-						array_push($ga_filter, "$key==$value");
+					if (!empty($key) && !strncmp('ga:', $key, 3)) {
+						if (!empty($value)) {
+							array_push($ga_filter, "$key==$value");
+						}
+					} else if (!empty($value)) {
+						 array_push($ga_filter, $value);
 					}
 				}
 			}
@@ -269,6 +273,7 @@ class Dashboard extends CI_Controller {
 	function _default_web() {
 		$data = array( 
 			'project_list' => $this->project,
+			'rules' => $this->ga_adsense_rule,
 			'selected' => NULL,
 			'debug' => array(),
 		);

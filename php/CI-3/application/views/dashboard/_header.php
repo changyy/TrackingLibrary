@@ -125,6 +125,8 @@ body {
 		<script>
 window.project_info = {};
 window.project_data = {};
+window.parts_handler = {};
+window.query_strings = {};
 function update_progress_status(value) {
 	if (value < 100) {
 		$('#progress_status').show();
@@ -136,7 +138,6 @@ function update_progress_status(value) {
 	$('#progress_value').css('width', value+'%').attr('aria-valuenow', value).html(value+'%');
 }
 function build_query_strings() {
-	window.query_strings = {};
 	var query = window.location.search.substring(1);
 	var vars = query.split('&');
 	for (var i = 0; i < vars.length; i++) {
@@ -473,6 +474,34 @@ function parse_analytis_data(ret_data, date_range_style, date_flag) {
 
 }
 function parse_adsense_data(ret_data, date_range_style, date_flag) {
+				var new_user_flag = 'NU,';
+				var old_user_flag = 'OU,';
+
+				var label_split_delimiter = ',';
+				var label_begin_skip_count = 1;
+				var label_end_skip_count = 0;
+			
+				if (window.parts_handler && window.query_strings && window.query_strings['project'] && window.parts_handler[window.query_strings['project']] && window.parts_handler[window.query_strings['project']]['adsense']) {
+					if (window.parts_handler[window.query_strings['project']]['adsense']['parts_flag']) {
+						if (window.parts_handler[window.query_strings['project']]['adsense']['parts_flag']['new_user']) {
+							new_user_flag = window.parts_handler[window.query_strings['project']]['adsense']['parts_flag']['new_user'];
+						}
+						if (window.parts_handler[window.query_strings['project']]['adsense']['parts_flag']['old_user']) {
+							old_user_flag = window.parts_handler[window.query_strings['project']]['adsense']['parts_flag']['old_user'];
+						}
+					}
+					if (window.parts_handler[window.query_strings['project']]['adsense']['parts_separator']) {
+						label_split_delimiter = window.parts_handler[window.query_strings['project']]['adsense']['parts_separator'];
+					}
+					if (window.parts_handler[window.query_strings['project']]['adsense']['parts_begin_skip_count']) {
+						label_begin_skip_count = window.parts_handler[window.query_strings['project']]['adsense']['parts_begin_skip_count'];
+					}
+					if (window.parts_handler[window.query_strings['project']]['adsense']['parts_end_skip_count']) {
+						label_end_skip_count = window.parts_handler[window.query_strings['project']]['adsense']['parts_end_skip_count'];
+					}
+					//console.log('window.parts_handler setup @ parse_adsense_data');
+				}
+
 				var field_lookup = {};
 				for( var i=0, cnt = ret_data['fields'].length ; i<cnt ; ++i)
 					field_lookup[ret_data['fields'][i]] = i;
@@ -482,8 +511,15 @@ function parse_adsense_data(ret_data, date_range_style, date_flag) {
 					//date_info = ret_data['data'][i][ field_lookup['DATE'] ].replace(/\-/g,'');
 					var raw_labels = ret_data['data'][i][ field_lookup['AD_UNIT_NAME'] ];
 					//console.log(raw_labels);
-					var labels = raw_labels.split(",");
-					labels.shift();	// remove first info
+					var labels = raw_labels.split(label_split_delimiter);
+					if (label_begin_skip_count > 0) {
+						for (var j=0 ; j<label_begin_skip_count ; ++j)
+							labels.shift();	// remove unused info
+					}
+					if (label_end_skip_count > 0) {
+						for (var j=0 ; j<label_end_skip_count ; ++j)
+							labels.pop();	// remove unused info
+					}
 					var group = labels.shift();
 
 					var value_earnings = parseFloat(ret_data['data'][i][ field_lookup['EARNINGS'] ]);
@@ -506,8 +542,8 @@ function parse_adsense_data(ret_data, date_range_style, date_flag) {
 					var value_ad_show = parseInt(ret_data['data'][i][ field_lookup['MATCHED_AD_REQUESTS'] ]);
 					var value_ad_get = parseInt(value_ad_request * value_coverage);
 
-					var is_new_user = raw_labels.indexOf('NU,') >= 0;
-					var is_old_user = raw_labels.indexOf('OU,') >= 0;
+					var is_new_user = raw_labels.indexOf(new_user_flag) >= 0;
+					var is_old_user = raw_labels.indexOf(old_user_flag) >= 0;
 					var value_data = {
 						"adsense": {
 							"new_user": {
@@ -587,7 +623,6 @@ function parse_adsense_data(ret_data, date_range_style, date_flag) {
 						window.project_info[group] = {}
 					var target = window.project_info[group];
 					var key_group = group;
-//*
 					for( var j=0 ; j<labels.length ; ++j ) {
 						if (labels[j] && labels[j].length >0) {
 							if (!target[labels[j]]) {
@@ -611,23 +646,6 @@ function parse_adsense_data(ret_data, date_range_style, date_flag) {
 						}
 					}
 					build_project_data(key_group,'',date_info,reset_data);
-// */
-
-//					var key_labels = '';
-//					build_project_data(key_group,key_labels,date_info,value_data);
-//					for( var j=0 ; j<labels.length ; ++j ) {
-//						if (labels[j] && labels[j].length >0) {
-//							key_labels = key_labels.length > 0 ? key_labels+','+labels[j] : labels[j];
-//							build_project_data(key_group,key_labels,date_info,value_data);
-//	
-//							if (!target[labels[j]]) {
-//								target[labels[j]] = {};
-//								target = target[labels[j]];
-//							} else {
-//								target = target[labels[j]];
-//							}
-//						}
-//					}
 				}
 }
 function build_analytics_adsense_pairing(date_begin, date_end, date_prev_begin, date_prev_end, date_range_style, status_report_callback) {
@@ -1128,6 +1146,15 @@ function build_treeview_data() {
 }
 
 		</script>
+<?php
+	if (isset($rules)) {
+?>
+		<script>
+			window.parts_handler = <?php echo json_encode($rules); ?>;
+		</script>
+<?php
+	}
+?>
 <!--
 <?php
 	if (isset($debug)) { 
