@@ -460,7 +460,7 @@ function parse_analytis_data(ret_data, date_range_style, date_flag) {
 						labels.unsift();
 					for (var j=0 ; j<label_end_skip_count ; j++)
 						labels.pop();
-console.log('group:',group,'labels:',labels);
+					//console.log('group:',group,'labels:',labels);
 
 					var value_new_user = parseInt(ret_data['data'][i][ field_lookup['ga:newUsers'] ]);
 					var value_user = parseInt(ret_data['data'][i][ field_lookup['ga:users'] ]);
